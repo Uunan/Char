@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+  <title>Char</title>
+  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <!-- ═══ TITLE BAR ═══ -->
+    <div class="title-bar">
+      <div class="tb-left">
+        <span class="app-logo">Char</span>
+        <div class="quick-actions">
+          <button class="qa-btn" id="qa-save" title="Kaydet (Ctrl+S)">💾</button>
+          <button class="qa-btn" id="qa-undo" title="Geri Al (Ctrl+Z)">↩</button>
+          <button class="qa-btn" id="qa-redo" title="İleri Al (Ctrl+Y)">↪</button>
+        </div>
+        <span class="doc-title" id="doc-title">Adsız Belge</span>
+      </div>
+      <div class="tb-right">
+        <div class="user-section" id="user-section" style="display:none;">
+          <span class="user-name" id="user-name"></span>
+          <div class="user-avatar" id="user-avatar"></div>
+        </div>
+        <div class="readonly-badge" id="readonly-badge" style="display:none;">Sadece Okuma</div>
+      </div>
+    </div>
+
+
+
+    <!-- ═══ RIBBON TOOLBAR ═══ -->
+    <div class="ribbon-tabs">
+      <div class="rt-tab file-tab" id="menu-file">
+        Dosya
+        <div class="menu-dropdown" id="dropdown-file">
+          <button id="menu-new">📄 Yeni Belge</button>
+          <button id="menu-open">📂 Aç</button>
+          <div class="menu-sep"></div>
+          <button id="menu-save">💾 Kaydet</button>
+          <button id="menu-saveas">📋 Farklı Kaydet</button>
+          <div class="menu-sep"></div>
+          <button id="menu-export-pdf">📑 PDF Olarak Dışa Aktar</button>
+          <button id="menu-print">🖨️ Yazdır</button>
+        </div>
+      </div>
+      <div class="rt-tab active" data-target="tab-home">Giriş</div>
+      <div class="rt-tab" data-target="tab-insert">Ekle</div>
+      <div class="rt-tab" data-target="tab-view">Görünüm</div>
+      <!-- Tablo Araçları Sekmesi (Contextual Tab) -->
+      <div class="rt-tab contextual-tab" id="tab-table-tab" data-target="tab-table" style="display:none;">Tablo Düzeni</div>
+    </div>
+    
+    <div class="ribbon" id="ribbon">
+      <!-- HOME TAB -->
+      <div class="ribbon-panel active" id="tab-home">
+        <!-- Clipboard Group -->
+        <div class="ribbon-group">
+          <div class="rg-content rb-col" style="flex-direction: row;">
+            <button class="rb-btn rb-large" id="btn-paste-large" title="Yapıştır (Ctrl+V)" style="flex-direction: column; height: auto; padding: 4px;">
+              <span style="font-size: 20px; margin-bottom: 2px;">📋</span>
+              <span style="font-size: 10px;">Yapıştır</span>
+            </button>
+            <div class="rb-col-small" style="display: flex; flex-direction: column; gap: 2px; justify-content: center;">
+              <button class="rb-btn" id="btn-cut" title="Kes (Ctrl+X)" style="justify-content: flex-start; padding: 2px 6px;">✂️ Kes</button>
+              <button class="rb-btn" id="btn-copy" title="Kopyala (Ctrl+C)" style="justify-content: flex-start; padding: 2px 6px;">📑 Kopyala</button>
+            </div>
+          </div>
+          <span class="rg-label">Pano</span>
+        </div>
+        
+        <div class="ribbon-sep"></div>
+
+        <!-- Font Group -->
+        <div class="ribbon-group">
+          <div class="rg-content">
+            <div class="rg-row">
+              <select id="heading-select" title="Stil">
+                <option value="p">Normal</option>
+                <option value="h1">Başlık 1</option>
+                <option value="h2">Başlık 2</option>
+                <option value="h3">Başlık 3</option>
+              </select>
+            </div>
+            <div class="rg-row">
+              <button class="rb-btn f-bold" id="btn-bold" title="Kalın (Ctrl+B)"><b>B</b></button>
+              <button class="rb-btn f-italic" id="btn-italic" title="İtalik (Ctrl+I)"><i>I</i></button>
+              <button class="rb-btn f-underline" id="btn-underline" title="Altı Çizili (Ctrl+U)"><u>U</u></button>
+              <button class="rb-btn f-strike" id="btn-strike" title="Üstü Çizili"><s>ab</s></button>
+              <button class="rb-btn" id="btn-code" title="Kod Bloğu">&lt;/&gt;</button>
+              <button class="rb-btn" id="btn-blockquote" title="Alıntı">❝</button>
+            </div>
+          </div>
+          <span class="rg-label">Yazı Tipi</span>
+        </div>
+        
+        <div class="ribbon-sep"></div>
+
+        <!-- Paragraph Group -->
+        <div class="ribbon-group">
+          <div class="rg-content">
+            <div class="rg-row">
+              <!-- Alignment Dropdown -->
+              <div class="rb-dropdown">
+                <button class="rb-btn rb-dropdown-toggle" id="btn-align-toggle" title="Hizalama">
+                  <span id="active-align-icon">≡◂</span> <span class="caret" style="font-size:8px; margin-left:4px;">▼</span>
+                </button>
+                <div class="rb-dropdown-menu">
+                  <button class="rb-dropdown-item" id="btn-align-left">≡◂ Sola Yasla</button>
+                  <button class="rb-dropdown-item" id="btn-align-center">≡ Ortala</button>
+                  <button class="rb-dropdown-item" id="btn-align-right">▸≡ Sağa Yasla</button>
+                  <button class="rb-dropdown-item" id="btn-align-justify">☰ İki Yana Yasla</button>
+                </div>
+              </div>
+              
+              <!-- Lists Dropdown -->
+              <div class="rb-dropdown">
+                <button class="rb-btn rb-dropdown-toggle" id="btn-lists-toggle" title="Listeler">
+                  <span id="active-list-icon">• ≡</span> <span class="caret" style="font-size:8px; margin-left:4px;">▼</span>
+                </button>
+                <div class="rb-dropdown-menu">
+                  <button class="rb-dropdown-item" id="btn-ul">• ≡ Madde İşaretli</button>
+                  <button class="rb-dropdown-item" id="btn-ol">1. ≡ Numaralı Liste</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="rg-label">Paragraf</span>
+        </div>
+      </div>
+      
+      <!-- INSERT TAB -->
+      <div class="ribbon-panel" id="tab-insert">
+        <div class="ribbon-group">
+          <div class="rg-content">
+            <div class="rg-row">
+              <button class="rb-btn" id="btn-table" title="Tablo Ekle">▦ Tablo</button>
+              <button class="rb-btn" id="btn-image" title="Resim Ekle">🖼️ Resim</button>
+              <button class="rb-btn" id="btn-hr" title="Yatay Çizgi">— Çizgi</button>
+            </div>
+          </div>
+          <span class="rg-label">Öğeler</span>
+        </div>
+      </div>
+
+      <!-- VIEW TAB -->
+      <div class="ribbon-panel" id="tab-view">
+        <div class="ribbon-group">
+          <div class="rg-content">
+            <div class="rg-row">
+              <button class="rb-btn" id="btn-read-mode" title="Okuma Modu">📖 Sadece Okuma</button>
+            </div>
+          </div>
+          <span class="rg-label">Görünümler</span>
+        </div>
+      </div>
+
+      <!-- TABLE CONTEXTUAL TAB PANEL -->
+      <div class="ribbon-panel" id="tab-table">
+        <div class="ribbon-group">
+          <div class="rg-content">
+            <div class="rg-row">
+              <button class="rb-btn" id="btn-add-row" title="Satır Ekle">➕ Satır Ekle</button>
+              <button class="rb-btn" id="btn-add-col" title="Sütun Ekle">➕ Sütun Ekle</button>
+              <div class="ribbon-sep"></div>
+              <button class="rb-btn" id="btn-del-row" title="Satır Sil">➖ Satır Sil</button>
+              <button class="rb-btn" id="btn-del-col" title="Sütun Sil">➖ Sütun Sil</button>
+              <div class="ribbon-sep"></div>
+              <button class="rb-btn" id="btn-del-table" style="color:#ef4444" title="Tabloyu Sil">🚮 Tabloyu Sil</button>
+            </div>
+          </div>
+          <span class="rg-label">Tablo Düzeni (Layout)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FIND & REPLACE BAR ═══ -->
+    <div class="find-bar" id="find-bar" style="display:none;">
+      <span class="find-label">Bul:</span>
+      <input type="text" id="find-input" placeholder="Aranacak metin...">
+      <span class="find-status" id="find-status"></span>
+      <button class="find-nav-btn" id="find-prev-btn" title="Önceki (Shift+Enter)">▲</button>
+      <button class="find-nav-btn" id="find-next-btn" title="Sonraki (Enter / F3)">▼</button>
+      <span class="find-sep"></span>
+      <span class="find-label">Değiştir:</span>
+      <input type="text" id="replace-input" placeholder="Değiştirilecek metin...">
+      <button id="replace-btn">Değiştir</button>
+      <button id="replace-all-btn">Tümünü Değiştir</button>
+      <button class="find-close-btn" id="find-close-btn" title="Kapat (Esc)">✕</button>
+    </div>
+
+    <!-- ═══ EDITOR ═══ -->
+    <div class="editor-wrapper" id="editor-wrapper">
+      <div class="auth-overlay" id="auth-overlay" style="display:none;">
+        <div class="loader"></div>
+        <span>Oturum açılıyor... Lütfen bekleyin.</span>
+      </div>
+      <div class="editor-scroll">
+        <!-- Tiptap will append its editor to #editor div -->
+        <div class="page" id="page">
+          <div id="editor"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STATUS BAR ═══ -->
+    <div class="status-bar">
+      <div class="sb-left">
+        <span id="word-count">0 kelime</span>
+        <span class="sb-sep">|</span>
+        <span id="char-count">0 karakter</span>
+        <span class="sb-sep">|</span>
+        <span id="autosave-status" style="opacity:0; transition: opacity 0.4s;">✓ Kaydedildi</span>
+      </div>
+      <div class="sb-right">
+        <button class="zoom-btn" id="zoom-out">−</button>
+        <span id="zoom-level">100%</span>
+        <button class="zoom-btn" id="zoom-in">+</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="bundle.js"></script>
+</body>
+</html>

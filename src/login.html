@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Char - Giriş</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',system-ui,sans-serif; }
+    body {
+      background: #0f0f0f;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      -webkit-app-region: drag;
+    }
+    .login-card {
+      width: 340px;
+      text-align: center;
+      -webkit-app-region: no-drag;
+    }
+    .brand {
+      margin-bottom: 48px;
+    }
+    .brand .logo {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .brand .tagline {
+      font-size: 13px;
+      color: #666;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(99,102,241,0.45);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      color: #888;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.08);
+      color: #aaa;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: #444;
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #222;
+    }
+    .footer-text {
+      margin-top: 32px;
+      font-size: 11px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">Char</div>
+      <div class="tagline">Modern Metin Düzenleyici</div>
+    </div>
+
+    <button class="btn btn-primary" id="login-btn">Giriş Yap</button>
+
+    <div class="divider">veya</div>
+
+    <button class="btn btn-ghost" id="readonly-btn">Sadece Oku</button>
+
+    <div class="footer-text">
+      Giriş yaparak tüm düzenleme özelliklerine erişebilirsiniz.
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-btn').addEventListener('click', () => {
+      window.charAPI.openAuth();
+    });
+    document.getElementById('readonly-btn').addEventListener('click', () => {
+      window.charAPI.readOnlyMode();
+    });
+  </script>
+</body>
+</html>
