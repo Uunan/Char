@@ -1,4 +1,4 @@
-import { Editor } from '@tiptap/core';
+import { Editor, Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -8,8 +8,66 @@ import { Image } from '@tiptap/extension-image';
 import { Underline } from '@tiptap/extension-underline';
 import { TextAlign } from '@tiptap/extension-text-align';
 
+
+// ── İndent (Girinti) Eklentisi ──
+const Indent = Extension.create({
+  name: 'indent',
+  addOptions() { return { types: ['paragraph', 'heading'], minIndent: 0, maxIndent: 8 } },
+  addGlobalAttributes() {
+    return [{
+      types: this.options.types,
+      attributes: {
+        indent: {
+          default: 0,
+          parseHTML: element => parseInt(element.getAttribute('data-indent') || '0', 10),
+          renderHTML: attrs => attrs.indent ? { 'data-indent': attrs.indent, style: `margin-left: ${attrs.indent * 24}px` } : {}
+        }
+      }
+    }]
+  },
+  addCommands() {
+    return {
+      indent: () => ({ tr, state, dispatch }) => {
+        let success = false;
+        tr.doc.nodesBetween(state.selection.from, state.selection.to, (node, pos) => {
+          if (this.options.types.includes(node.type.name)) {
+            const current = node.attrs.indent || 0;
+            if (current < this.options.maxIndent) {
+              tr.setNodeMarkup(pos, node.type, { ...node.attrs, indent: current + 1 });
+              success = true;
+            }
+          }
+        });
+        if (success && dispatch) dispatch(tr);
+        return success;
+      },
+      outdent: () => ({ tr, state, dispatch }) => {
+        let success = false;
+        tr.doc.nodesBetween(state.selection.from, state.selection.to, (node, pos) => {
+          if (this.options.types.includes(node.type.name)) {
+            const current = node.attrs.indent || 0;
+            if (current > this.options.minIndent) {
+              tr.setNodeMarkup(pos, node.type, { ...node.attrs, indent: current - 1 });
+              success = true;
+            }
+          }
+        });
+        if (success && dispatch) dispatch(tr);
+        return success;
+      }
+    }
+  },
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => this.editor.commands.indent(),
+      'Shift-Tab': () => this.editor.commands.outdent(),
+    }
+  }
+});
+
 // ══════════════════════════════════════════════════════════════
 //  CHAR – Renderer  |  renderer.js  (P0 complete)
+
 //  P0 Features:
 //    ✓ Find & Replace (Ctrl+F / Ctrl+H)
 //    ✓ Lokal dosyadan resim ekleme (native dialog → base64)
@@ -58,6 +116,7 @@ const editor = new Editor({
     TableRow,
     TableHeader,
     TableCell,
+    Indent,
   ],
   content: '<p></p>',
   editable: !isReadOnly,
@@ -112,11 +171,13 @@ function updateActiveStates(ed) {
   toggle('btn-ul', ed.isActive('bulletList'));
   toggle('btn-ol', ed.isActive('orderedList'));
 
-  const headingSelect = document.getElementById('heading-select');
-  if      (ed.isActive('heading', { level: 1 })) headingSelect.value = 'h1';
-  else if (ed.isActive('heading', { level: 2 })) headingSelect.value = 'h2';
-  else if (ed.isActive('heading', { level: 3 })) headingSelect.value = 'h3';
-  else                                            headingSelect.value = 'p';
+  const activeHeadingText = document.getElementById('active-heading-text');
+  if (activeHeadingText) {
+    if      (ed.isActive('heading', { level: 1 })) activeHeadingText.textContent = 'Başlık 1';
+    else if (ed.isActive('heading', { level: 2 })) activeHeadingText.textContent = 'Başlık 2';
+    else if (ed.isActive('heading', { level: 3 })) activeHeadingText.textContent = 'Başlık 3';
+    else                                           activeHeadingText.textContent = 'Normal';
+  }
 
   const tableTab = document.getElementById('tab-table-tab');
   if (ed.isActive('table')) {
@@ -209,6 +270,10 @@ bindCommand('btn-ol',             chain => chain.toggleOrderedList());
 bindCommand('btn-table',          chain => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }));
 bindCommand('btn-hr',             chain => chain.setHorizontalRule());
 
+
+bindCommand('btn-indent',       chain => chain.indent());
+bindCommand('btn-outdent',      chain => chain.outdent());
+
 // Tablo araçları
 bindCommand('btn-add-row',  chain => chain.addRowAfter());
 bindCommand('btn-add-col',  chain => chain.addColumnAfter());
@@ -221,11 +286,15 @@ bindCommand('qa-undo', chain => chain.undo());
 bindCommand('qa-redo', chain => chain.redo());
 
 // Heading seçici
-document.getElementById('heading-select').addEventListener('change', (e) => {
-  if (isReadOnly) return triggerLoginFlow();
-  const val = e.target.value;
-  if (val === 'p') editor.chain().focus().setParagraph().run();
-  else editor.chain().focus().toggleHeading({ level: parseInt(val.replace('h', '')) }).run();
+document.querySelectorAll('.heading-option').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isReadOnly) return triggerLoginFlow();
+    const val = btn.getAttribute('data-level');
+    if (val === 'p') editor.chain().focus().setParagraph().run();
+    else editor.chain().focus().toggleHeading({ level: parseInt(val) }).run();
+    document.querySelectorAll('.rb-dropdown-menu').forEach(m => m.classList.remove('show'));
+  });
 });
 
 // ── Pano ──
